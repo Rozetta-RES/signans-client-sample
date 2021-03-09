@@ -36,3 +36,9 @@ npm run text-translate
 ```
 npm run streaming-stt
 ```
+
+* 言語リストの取得
+
+```
+npm run language-list
+```
