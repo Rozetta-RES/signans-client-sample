@@ -3,9 +3,8 @@
 const fetch = require('node-fetch');
 
 const config = require('./config');
-const { getJwtToken } = require('./auth');
+const { getJwt } = require('./auth');
 
-const tokenPath = '/api/v1/token';
 const apiPath = '/api/v1/translate';
 
 const translationData = {
@@ -43,8 +42,7 @@ const getTextResult = async (host, token, translationData) => {
 const main = async () => {
   const env = config.signans;
   const { accessKey, secretKey } = env.authConfig;
-  const tokenUrl = `https://${env.host}${tokenPath}`;
-  const token = await getJwtToken(tokenUrl, accessKey, secretKey);
+  const token = await getJwt(accessKey, secretKey);
   if (token) {
     try {
       const response = await getTextResult(
