@@ -1,6 +1,6 @@
 # signans-java-client-sample
 
-シグナンスAPIのクライエントJavaサンプルコード。
+シグナンスAPIのクライアントJavaサンプルコード。
 
 ## 要件
 
