@@ -114,7 +114,7 @@ const main = async () => {
       console.log('Connection closed.');
     });
   } else {
-    console.error('JWT error');
+    console.error('Unable to get JWT.');
   }
 };
 

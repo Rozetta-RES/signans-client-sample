@@ -52,7 +52,7 @@ const main = async () => {
       console.error(error);
     }
   } else {
-    console.error('JWT error');
+    console.error('Unable to get JWT.');
   }
 };
 
