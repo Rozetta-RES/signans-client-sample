@@ -52,7 +52,7 @@ const main = async () => {
       console.error(error);
     }
   } else {
-    console.error('JwtToken error');
+    console.error('JWT error');
   }
 };
 

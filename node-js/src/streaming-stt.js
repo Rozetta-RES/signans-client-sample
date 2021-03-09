@@ -114,7 +114,7 @@ const main = async () => {
       console.log('Connection closed.');
     });
   } else {
-    console.error('JwtToken error');
+    console.error('JWT error');
   }
 };
 
