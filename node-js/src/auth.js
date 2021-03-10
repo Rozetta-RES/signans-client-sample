@@ -1,10 +1,10 @@
 'use strict';
 
 const fetch = require('node-fetch');
-const config = require('./config');
+const { BASE_URL } = require('./common');
 
-const tokenPath = '/api/v1/token';
-const url = `https://${config.signans.host}${tokenPath}`
+const tokenPath = '/token';
+const url = `${BASE_URL}${tokenPath}`
 
 const getJwt = async (accessKey, secretKey) => {
   const data = {

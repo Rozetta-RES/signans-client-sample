@@ -8,7 +8,7 @@ const { getJwt } = require('./auth');
 
 const fsPromise = fs.promises;
 
-const apiPath = '/api/v1/translate/stt-streaming';
+const apiPath = '/translate/stt-streaming';
 const start = Date.now();
 
 /**
@@ -83,7 +83,7 @@ const main = async () => {
   const { accessKey, secretKey } = env.authConfig;
   const token = await getJwt(accessKey, secretKey);
   if (token) {
-    const url = `wss://${env.host}${apiPath}?token=Bearer ${token}`;
+    const url = `wss://${env.host}/api/v1${apiPath}?token=Bearer ${token}`;
     console.log(url);
     speechData.audioBuffer = await fsPromise.readFile(speechData.audioFile);
     const connection = new WebSocket(url);

@@ -4,8 +4,9 @@ const fetch = require('node-fetch');
 
 const config = require('./config');
 const { getJwt } = require('./auth');
+const { BASE_URL } = require('./common');
 
-const apiPath = '/api/v1/translate';
+const apiPath = '/translate';
 
 const translationData = {
   text: [
@@ -16,7 +17,7 @@ const translationData = {
 };
 
 const getTextResult = async (host, token, translationData) => {
-  const url = `https://${host}${apiPath}`;
+  const url = `${BASE_URL}${apiPath}`;
   console.log(`Request URL: ${url}`);
   console.log(`Token: ${token}`);
   const response = await fetch(

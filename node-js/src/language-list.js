@@ -4,8 +4,7 @@ const fetch = require('node-fetch');
 
 const config = require('./config');
 const { getJwt } = require('./auth');
-
-const basePath = '/api/v1';
+const { BASE_URL } = require('./common');
 
 const apiPaths = {
   text: '/languages/engine/insource-fast',
@@ -13,9 +12,9 @@ const apiPaths = {
 };
 
 const getLanguageList = async (host, token) => {
-  const url = `https://${host}${basePath}${apiPaths.text}`;
+  const url = `${BASE_URL}${apiPaths.text}`;
   // You can also get a list of streaming languages as follows:
-  // const url = `https://${host}${basePath}${apiPaths.streaming}`;
+  // const url = `${BASE_URL}${apiPaths.streaming}`;
   console.log(`Request URL: ${url}`);
   console.log(`Token: ${token}`);
   const response = await fetch(
