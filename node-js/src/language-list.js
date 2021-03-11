@@ -11,7 +11,7 @@ const apiPaths = {
   streaming: '/stt-streaming-languages',
 };
 
-const getLanguageList = async (host, token) => {
+const getLanguageList = async (token) => {
   const url = `${BASE_URL}${apiPaths.text}`;
   // You can also get a list of streaming languages as follows:
   // const url = `${BASE_URL}${apiPaths.streaming}`;
@@ -41,10 +41,7 @@ const main = async () => {
   const token = await getJwt(accessKey, secretKey);
   if (token) {
     try {
-      const response = await getLanguageList(
-        env.host,
-        token,
-      );
+      const response = await getLanguageList(token);
       console.log('Server response:');
       console.log(response);
     } catch (error) {

@@ -16,7 +16,7 @@ const translationData = {
   targetLang: 'ja',
 };
 
-const getTextResult = async (host, token, translationData) => {
+const getTextResult = async (token, translationData) => {
   const url = `${BASE_URL}${apiPath}`;
   console.log(`Request URL: ${url}`);
   console.log(`Token: ${token}`);
@@ -47,7 +47,6 @@ const main = async () => {
   if (token) {
     try {
       const response = await getTextResult(
-        env.host,
         token,
         translationData
       );

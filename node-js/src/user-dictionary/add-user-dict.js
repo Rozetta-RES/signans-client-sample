@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 
 const config = require('../config');
 const { getJwt } = require('../auth');
+const { BASE_URL } = require('../common');
 
 const dictionary = {
   'fromLang': 'en',
@@ -11,8 +12,6 @@ const dictionary = {
   'toLang': 'ja',
   'toText': '金曜日'
 }
-
-const BASE_URL = `https://${config.signans.host}/api/v1`;
 
 const addUserDictionary = async (dictionary) => {
   const env = config.signans;
