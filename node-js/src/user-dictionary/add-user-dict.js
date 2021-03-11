@@ -31,8 +31,8 @@ const addUserDictionary = async (dictionary) => {
   );
   if (!response.ok) {
     const message = await response.text();
-    console.error(`Failed to translate the text: ${message}`);
-    throw new Error('Failed to translate the text.');
+    console.error(`Failed to add the dictionary: ${message}`);
+    throw new Error('Failed to add the dictionary.');
   }
   console.log(await response.json());
 };

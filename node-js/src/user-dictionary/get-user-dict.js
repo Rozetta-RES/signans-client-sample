@@ -22,8 +22,8 @@ const getUserDictionary = async () => {
   );
   if (!response.ok) {
     const message = await response.text();
-    console.error(`Failed to translate the text: ${message}`);
-    throw new Error('Failed to translate the text.');
+    console.error(`Failed to get the dictionaries: ${message}`);
+    throw new Error('Failed to get the dictionaries.');
   }
   const responseJSON = await response.json();
   return responseJSON.data;

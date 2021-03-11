@@ -22,8 +22,8 @@ const deleteUserDictionary = async (entryId) => {
   );
   if (!response.ok) {
     const message = await response.text();
-    console.error(`Failed to translate the text: ${message}`);
-    throw new Error('Failed to translate the text.');
+    console.error(`Failed to delete the dictionary: ${message}`);
+    throw new Error('Failed to delete the dictionary.');
   }
   console.log(await response.json());
 };
