@@ -42,3 +42,29 @@ npm run streaming-stt
 ```
 npm run language-list
 ```
+
+* ユーザー辞書の追加
+
+```
+node src/user-dictionary/add-user-dict.js
+```
+
+* ユーザー辞書の取得
+
+```
+node src/user-dictionary/get-user-dict.js
+```
+
+* ユーザー辞書の更新
+
+```
+node src/user-dictionary/update-user-dict.js <id>
+```
+`<id>`には`ユーザー辞書の取得`で取得したIDを入力してください。
+
+* ユーザー辞書の削除
+
+```
+node src/user-dictionary/delete-user-dict.js <id>
+```
+`<id>`には`ユーザー辞書の取得`で取得したIDを入力してください。
