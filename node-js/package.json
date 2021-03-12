@@ -1,0 +1,17 @@
+{
+  "name": "signans-api-sample",
+  "version": "1.0.0",
+  "description": "Node.js sample code for Signans API.",
+  "main": "auth.js",
+  "scripts": {
+    "text-translate": "node src/text-translation.js",
+    "streaming-stt": "node src/streaming-stt.js",
+    "language-list": "node src/language-list.js"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "node-fetch": "^2.6.1",
+    "ws": "^7.4.2"
+  }
+}
