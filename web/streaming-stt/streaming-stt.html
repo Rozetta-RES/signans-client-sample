@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>シグナンス / テキスト翻訳</title>
+  <link rel="stylesheet" href="/index.css" type="text/css" />
+</head>
+<body>
+  <h1>
+    ストリーミング音声認識
+  </h1>
+  <p>認証用キーと契約IDを入力してください。</p>
+  <fieldset>
+      <legend>ユーザー認証</legend>
+      <label>
+        アクセスキー
+        <input type="text" id="access-key" />
+      </label>
+      <label>
+        シクレットキー
+        <input type="password" id="secret-key" />
+      </label>
+      <label>
+        契約ID
+        <input type="text" id="contract-id" />
+      </label>
+  </fieldset>
+  <p>音声言語を選択してください。</p>
+  <fieldset>
+    <legend>音声認識設定</legend>
+    <label>
+      言語
+      <select id="speech-language">
+        <option value="en" selected="selected">英語</option>
+        <option value="ja">日本語</option>
+        <option value="zh-CN">中国語</option>
+      </select>
+    </label>
+  </fieldset>
+  <p>
+    「開始」ボタンを押してください。
+    音声認識終わったら、
+    「終了」ボタンを押してください。
+  </p>
+  <p>
+    <input type="button" id="start-button" value="開始" />
+    <input type="button" id="stop-button" value="終了" />
+  </p>
+  <div id="output"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/3.2.0/sha256.min.js" integrity="sha512-j1REQToOszIQ5VTqzcgk5uHGXN3ce9NVsWSA3PA2Ze2NhwMiavzScb669EbY6XBHrhGFvLUpP6OhT9/LV7g8cw==" crossorigin="anonymous"></script>
+  <script src="./wav-audio-encoder.js"></script>
+  <script src="./streaming-stt.js"></script>
+</body>
+</html>
