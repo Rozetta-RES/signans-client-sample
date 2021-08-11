@@ -311,7 +311,7 @@
 
   const initAudioStream = async () => {
     if (!navigator.mediaDevices) {
-      prependOutput('MediaDevices not supported, no speech can be recorded.')
+      prependOutput('MediaDevices not supported, no speech can be recorded.');
       return;
     }
     try {
