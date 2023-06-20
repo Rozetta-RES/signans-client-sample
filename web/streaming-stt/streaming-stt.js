@@ -3,31 +3,54 @@
 (() => {
   const accessKeyInput = document.getElementById('access-key');
   const secretKeyInput = document.getElementById('secret-key');
-  const contractIdInput = document.getElementById('contract-id');
   const speechLanguageInput = document.getElementById('speech-language');
   const startButton = document.getElementById('start-button');
   const stopButton = document.getElementById('stop-button');
+  const showSystemLogInput = document.getElementById('show-system-log');
+  const showRecognizingInput = document.getElementById('show-recognizing');
   const output = document.getElementById('output');
 
+  const SIGNANS_TRANSLATE_DOMAIN = 'translate.signans.io';
   const JWT_API_PATH = '/api/v1/token';
   const STREAMING_STT_API_PATH = '/api/v1/translate/stt-streaming';
+  const AUDIO_SLICE_INTERVAL = 1000;
+  const AUDIO_SAMPLE_RATE = 16000;
 
-  const WEBSOCKET_READY_STATE = {
+  // ユーザー認証キーをあらかじめセットできます
+  // アクセスキー
+  const ACCESS_KEY_DEFAULT = 'c80a380d0e464cc995823c33d992ece6823da5124c6e5b1386bb913a8b28fb95';
+  // シークレットキー
+  const SECRET_KEY_DEFAULT = '72d2a50017a9e0700374ccc52cae5a0510be118abac96245ea1ee233ed0eec3d0672c6262d1a00dfc788880b0d94d12d';
+
+  if (ACCESS_KEY_DEFAULT) {
+    accessKeyInput.value = ACCESS_KEY_DEFAULT;
+  }
+
+  if (SECRET_KEY_DEFAULT) {
+    secretKeyInput.value = SECRET_KEY_DEFAULT;
+  }
+
+  const SIGNANS_CONNECTION_READY_STATE = {
     CONNECTING: 0,
     OPEN: 1,
     CLOSING: 2,
     CLOSED: 3,
   };
-  const WEBSOCKET_CLOSE_EVENT = {
+
+  // Signans 接続切断時に送信するイベントコード
+  const SIGNANS_CONNECTION_CLOSE_EVENT = {
     NORMAL_CLOSURE: 1000,
   };
 
+  // Signans に送信するコマンド種類
   const COMMAND_TYPE = {
     SET_LANGUAGE: 'SET_LANGUAGE',
     SET_SAMPLING_RATE: 'SET_SAMPLING_RATE',
     END_STREAM: 'END_STREAM',
     END_SESSION: 'END_SESSION',
   };
+
+  // Signans から受信するメッセージ種類
   const RESPONSE_TYPE = {
     LANGUAGE_READY: 'LANGUAGE_READY',
     SAMPLING_RATE_READY: 'SAMPLING_RATE_READY',
@@ -35,19 +58,27 @@
     RECOGNITION_ERROR: 'RECOGNITION_ERROR',
   };
 
+  // レコーダーの状態
   const RECORDER_STATE = {
     INACTIVE: 'inactive',
     RECORDING: 'recording',
     PAUSED: 'paused',
   };
-  const AUDIO_SLICE_INTERVAL = 1000;
-  const AUDIO_SAMPLE_RATE = 16000;
+
+  const HTML_CLASSES = {
+    SYSTEM_LOG: 'system-log',
+    RECOGNIZING: 'recognizing',
+    RECOGNIZED: 'recognized',
+  };
 
   const audioContext = new window.AudioContext();
 
+  class SignansClient {
+
+  }
+
   let accessKey = null;
   let secretKey = null;
-  let contractId = null;
   let speechLanguage = null;
 
   let client = null;
@@ -57,34 +88,26 @@
   let audioChunks = [];
   let recordLoopTimer = null;
 
-  const prependOutput = (message) => {
-    const line = `${(new Date()).toISOString()}: ${message}`;
-    const paragraph = document.createElement('p');
-    paragraph.appendChild(document.createTextNode(line));
-    output.prepend(paragraph);
-  };
-
-  const isLocalConnection = () => {
+  const isLocal = () => {
     const { hostname } = window.location;
-    return ((hostname === '127.0.0.1') || (hostname === 'localhost'));
+    return (!hostname || (hostname === '127.0.0.1') || (hostname === 'localhost'));
   };
 
   const isConnectionOpen = () => {
     if (client === null) {
       return false;
     }
-    return (client.readyState === WEBSOCKET_READY_STATE.OPEN);
+    return (client.readyState === SIGNANS_CONNECTION_READY_STATE.OPEN);
   };
 
-  const getJWT = async () => {
-    const { host } = window.location;
+  const getSignansToken = async () => {
     let protocol = null;
-    if (window.isSecureContext && !isLocalConnection()) {
-      protocol = 'https:';
-    } else {
+    if (isLocal()) {
       protocol = 'http:';
+    } else {
+      protocol = 'https:';
     }
-    const url = `${protocol}//${host}${JWT_API_PATH}`;
+    const url = `${protocol}//${SIGNANS_TRANSLATE_DOMAIN}${JWT_API_PATH}`;
     const response = await window.fetch(url, {
       method: 'POST',
       headers: {
@@ -96,7 +119,7 @@
       }),
     });
     if (!response.ok) {
-      prependOutput('Unable to obtain JWT for authentication.');
+      outputLog('Unable to obtain JWT for authentication.', HTML_CLASSES.SYSTEM_LOG);
       return null;
     }
     const responseJSON = await response.json();
@@ -105,7 +128,7 @@
 
   const setLangauge = (language) => {
     if (!isConnectionOpen()) {
-      prependOutput('Connection is not open, unable to set speech language.');
+      outputLog('Connection is not open, unable to set speech language.', HTML_CLASSES.SYSTEM_LOG);
       return;
     }
     client.send(JSON.stringify({
@@ -116,7 +139,7 @@
 
   const setSamplingRate = (samplingRate) => {
     if (!isConnectionOpen()) {
-      prependOutput('Connection is not open, unable to set sampling rate.');
+      outputLog('Connection is not open, unable to set sampling rate.', HTML_CLASSES.SYSTEM_LOG);
       return;
     }
     client.send(JSON.stringify({
@@ -127,7 +150,7 @@
 
   const sendAudio = (blob) => {
     if (!isConnectionOpen()) {
-      prependOutput('Connection is not open, unable to send audio.');
+      outputLog('Connection is not open, unable to send audio.', HTML_CLASSES.SYSTEM_LOG);
       return;
     }
     client.send(blob);
@@ -135,7 +158,7 @@
 
   const endSession = () => {
     if (!isConnectionOpen()) {
-      prependOutput('Connection is not open, unable end session.');
+      outputLog('Connection is not open, unable end session.', HTML_CLASSES.SYSTEM_LOG);
       return;
     }
     client.send(JSON.stringify({
@@ -210,17 +233,17 @@
     const { error } = event;
     console.error(`Record error: ${error.name}.`);
     console.error(error);
-    prependOutput('Error occurred during recording.');
+    outputLog('Error occurred during recording.', HTML_CLASSES.SYSTEM_LOG);
   };
 
   const initRecorder = async () => {
     audioRecorder = new window.MediaRecorder(audioStream);
     const { audioBitsPerSecond } = audioRecorder;
-    prependOutput(`Recorder encodes at ${audioBitsPerSecond} bits/s.`);
+    outputLog(`Recorder encodes at ${audioBitsPerSecond} bits/s.`, HTML_CLASSES.SYSTEM_LOG);
     audioRecorder.ondataavailable = (event) => audioChunks.push(event.data);
     audioRecorder.onerror = (event) => processRecorderError(event);
     audioRecorder.start(AUDIO_SLICE_INTERVAL);
-    prependOutput('Please speak.');
+    outputLog('Please speak.', HTML_CLASSES.SYSTEM_LOG);
     initRecordLoop();
   };
 
@@ -241,62 +264,65 @@
       parsedMessage = JSON.parse(message);
     } catch (error) {
       console.error(`Unable to parse the raw message: ${message}`);
-      prependOutput('Ignored a message, which cannot be parsed, from server.');
+      outputLog('Ignored a message, which cannot be parsed, from server.', HTML_CLASSES.SYSTEM_LOG);
       return;
     }
     switch (parsedMessage.type) {
       case RESPONSE_TYPE.LANGUAGE_READY:
-        prependOutput('Speech language has been set.');
+        outputLog('Speech language has been set.', HTML_CLASSES.SYSTEM_LOG);
         setSamplingRate(AUDIO_SAMPLE_RATE);
         break;
       case RESPONSE_TYPE.SAMPLING_RATE_READY:
-        prependOutput('Sampling rate has been set.');
-        prependOutput('Initializing recorder.');
+        outputLog('Sampling rate has been set.', HTML_CLASSES.SYSTEM_LOG);
+        outputLog('Initializing recorder.', HTML_CLASSES.SYSTEM_LOG);
         initRecorder();
         break;
       case RESPONSE_TYPE.RECOGNITION_RESULT:
-        prependOutput(`Detected transcript: ${parsedMessage.value}`);
+        if (parsedMessage.status === 'recognizing') {
+          outputLog(`${parsedMessage.value}`, HTML_CLASSES.RECOGNIZING);
+        } else {
+          outputLog(`${parsedMessage.value}`, HTML_CLASSES.RECOGNIZED);
+        }
         break;
       case RESPONSE_TYPE.RECOGNITION_ERROR:
-        prependOutput('Recognition error detected.');
-        prependOutput(parsedMessage.value);
-        prependOutput('Stopping recorder.');
+        outputLog('Recognition error detected.', HTML_CLASSES.SYSTEM_LOG);
+        outputLog(parsedMessage.value);
+        outputLog('Stopping recorder.', HTML_CLASSES.SYSTEM_LOG);
         stopRecorder();
-        prependOutput('Ending session.');
+        outputLog('Ending session.', HTML_CLASSES.SYSTEM_LOG);
         endSession();
         break;
       default:
-        prependOutput(`Unexpected message type ${parsedMessage.type}.`);
+        outputLog(`Unexpected message type ${parsedMessage.type}.`, HTML_CLASSES.SYSTEM_LOG);
     }
   };
 
   const connect = async () => {
-    const token = await getJWT();
-    prependOutput(`Token: ${token}`);
-    const { host } = window.location;
+    const token = await getSignansToken();
+    outputLog(`Token: ${token}`, HTML_CLASSES.SYSTEM_LOG);
     let protocol = null;
-    if (window.isSecureContext && !isLocalConnection()) {
-      protocol = 'wss:';
-    } else {
+    if (isLocal()) {
       protocol = 'ws:';
+    } else {
+      protocol = 'wss:';
     }
     const params = new URLSearchParams();
     params.set('token', `Bearer ${token}`);
-    const url = `${protocol}//${host}${STREAMING_STT_API_PATH}?${params.toString()}`;
-    prependOutput(`Connecting to ${url}.`);
+    const url = `${protocol}//${SIGNANS_TRANSLATE_DOMAIN}${STREAMING_STT_API_PATH}?${params.toString()}`;
+    outputLog(`Connecting to ${url}.`, HTML_CLASSES.SYSTEM_LOG);
     client = new window.WebSocket(url);
     client.onopen = () => {
-      prependOutput('Connection is opened.');
+      outputLog('Connection is opened.', HTML_CLASSES.SYSTEM_LOG);
       setLangauge(speechLanguage);
     };
     client.onmessage = (message) => processMessage(message.data);
     client.onerror = (event) => {
-      console.error('Client detected an error.');
+      console.error('Client detected an error.', HTML_CLASSES.SYSTEM_LOG);
       console.error(event);
-      prependOutput('Connection has an error. See log for details.');
+      outputLog('Connection has an error. See log for details.', HTML_CLASSES.SYSTEM_LOG);
     };
     client.onclose = () => {
-      prependOutput('Connection is closed.');
+      outputLog('Connection is closed.', HTML_CLASSES.SYSTEM_LOG);
       audioRecorder = null;
       client = null;
     };
@@ -306,12 +332,12 @@
     if (!isConnectionOpen()) {
       return;
     }
-    client.close(WEBSOCKET_CLOSE_EVENT.NORMAL_CLOSURE);
+    client.close(SIGNANS_CONNECTION_CLOSE_EVENT.NORMAL_CLOSURE);
   };
 
   const initAudioStream = async () => {
     if (!navigator.mediaDevices) {
-      prependOutput('MediaDevices not supported, no speech can be recorded.');
+      outputLog('MediaDevices not supported, no speech can be recorded.', HTML_CLASSES.SYSTEM_LOG);
       return;
     }
     try {
@@ -321,26 +347,59 @@
     } catch (error) {
       console.error('Unable to get media input (audio).');
       console.error(error);
-      prependOutput('Unable to get audio stream, no speech can be recorded.');
+      outputLog('Unable to get audio stream, no speech can be recorded.', HTML_CLASSES.SYSTEM_LOG);
     }
   };
 
   startButton.onclick = () => {
     accessKey = accessKeyInput.value;
     secretKey = secretKeyInput.value;
-    contractId = contractIdInput.value;
     speechLanguage = speechLanguageInput.options[speechLanguageInput.selectedIndex].value;
-    prependOutput(`Access key: ${accessKey}`);
-    prependOutput(`Secret key: ${secretKey}`);
-    prependOutput(`Contract ID: ${contractId}`);
-    prependOutput(`Language: ${speechLanguage}`);
+    outputLog(`Access key: ${accessKey}`, HTML_CLASSES.SYSTEM_LOG);
+    outputLog(`Secret key: ${secretKey}`, HTML_CLASSES.SYSTEM_LOG);
+    outputLog(`Language: ${speechLanguage}`, HTML_CLASSES.SYSTEM_LOG);
     connect();
   };
+
+  showRecognizingInput.onchange = () => {
+    Array.from(document.querySelectorAll(`.${HTML_CLASSES.RECOGNIZING}`)).forEach((element) => applyVisibility(element, showRecognizingInput));
+  }
+
+  showSystemLogInput.onchange = () => {
+    Array.from(document.querySelectorAll(`.${HTML_CLASSES.SYSTEM_LOG}`)).forEach((element) => applyVisibility(element, showSystemLogInput));
+  }
 
   stopButton.onclick = () => {
     stopRecorder();
     disconnect();
   };
+
+  const outputLog = (message, _class) => {
+    const tableTr = document.createElement('tr');
+    if (_class) {
+      tableTr.classList.add(_class);
+      if (_class === HTML_CLASSES.RECOGNIZING) {
+        applyVisibility(tableTr, showRecognizingInput);
+      }
+      if (_class === HTML_CLASSES.SYSTEM_LOG) {
+        applyVisibility(tableTr, showSystemLogInput);
+      }
+    }
+    const tableTd1 = document.createElement('td');
+    const tableTd2 = document.createElement('td');
+    const tableTd3 = document.createElement('td');
+    tableTd1.appendChild(document.createTextNode(`${(new Date()).toISOString()}`));
+    tableTd2.appendChild(document.createTextNode(`${_class}`));
+    tableTd3.appendChild(document.createTextNode(`${message}`));
+    tableTr.appendChild(tableTd1);
+    tableTr.appendChild(tableTd2);
+    tableTr.appendChild(tableTd3);
+    output.prepend(tableTr);
+  };
+
+  const applyVisibility = (element, input) => {
+    element.style.display = input.checked ? 'table-row': 'none';
+  }
 
   initAudioStream();
 })();
