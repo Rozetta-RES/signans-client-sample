@@ -14,8 +14,8 @@ const AUDIO_SAMPLE_RATE = 16000;
 // signans client constants (parameter)
 const SIGNANS_CLIENT = {
     SIGNANS_DOMAIN: 'translate.signans.io',
-    ACCESS_KEY: 'c80a380d0e464cc995823c33d992ece6823da5124c6e5b1386bb913a8b28fb95',
-    SECRET_KEY: '72d2a50017a9e0700374ccc52cae5a0510be118abac96245ea1ee233ed0eec3d0672c6262d1a00dfc788880b0d94d12d',
+    ACCESS_KEY: '',
+    SECRET_KEY: '',
 };
 
 // signans client constants (for logic)
