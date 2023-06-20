@@ -4,50 +4,67 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>シグナンス / テキスト翻訳</title>
-  <link rel="stylesheet" href="/index.css" type="text/css" />
+  <style>
+    .system-log {
+      color: #990066;
+    }
+    .recognizing {
+      color: #006699;
+    }
+    #output-table {
+      border-collapse: collapse;
+    }
+    #output-table tr, #output-table td {
+      border: 1px solid black;
+      padding: 0 5px;
+    }
+    #output td:nth-child(1), #output td:nth-child(2) {
+      white-space: nowrap;
+    }
+  </style>
 </head>
 <body>
   <h1>
-    ストリーミング音声認識
+    Streaming Speech Recognition Demo
   </h1>
-  <p>認証用キーと契約IDを入力してください。</p>
+  <p>1. Input Signans keys.</p>
   <fieldset>
-      <legend>ユーザー認証</legend>
-      <label>
-        アクセスキー
-        <input type="text" id="access-key" />
-      </label>
-      <label>
-        シクレットキー
-        <input type="password" id="secret-key" />
-      </label>
-      <label>
-        契約ID
-        <input type="text" id="contract-id" />
-      </label>
+      <legend>Signans keys</legend>
+      <table>
+        <tr>
+          <td>Access key</td>
+          <td><input type="text" id="access-key" size="70" /></td>
+        </tr>
+        <tr>
+          <td>Secret key</td><td><input type="password" id="secret-key" size="70" /></td>
+        </tr>
+      </table>
   </fieldset>
-  <p>音声言語を選択してください。</p>
+  <p>2. Set language on recognition.</p>
   <fieldset>
-    <legend>音声認識設定</legend>
-    <label>
-      言語
+    <legend>Language</legend>
       <select id="speech-language">
-        <option value="en" selected="selected">英語</option>
-        <option value="ja">日本語</option>
-        <option value="zh-CN">中国語</option>
+        <option value="en" selected="selected">English</option>
+        <option value="ja">Japanese</option>
+        <option value="zh-CN">Simplified Chinese</option>
       </select>
-    </label>
   </fieldset>
   <p>
-    「開始」ボタンを押してください。
-    音声認識終わったら、
-    「終了」ボタンを押してください。
+    3. Recognition starts when you press the button "Recognition START". Press the button "Recognition END" to stop.
   </p>
   <p>
-    <input type="button" id="start-button" value="開始" />
-    <input type="button" id="stop-button" value="終了" />
+    <input type="button" id="start-stop-button" value="Recognition START" />
+    <label><input type="checkbox" id="show-system-log" checked="checked" /><span style="color:#990066">Show system log</span></label>
+    <label><input type="checkbox" id="show-recognizing" checked="checked" /><span style="color:#006699">Show on recognizing</span></label>
   </p>
-  <div id="output"></div>
+  <table id="output-table">
+    <thead>
+      <td>Date</td>
+      <td>Type</td>
+      <td>Content</td>
+    </thead>
+    <tbody id="output"></tbody>
+  </table>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/3.2.0/sha256.min.js" integrity="sha512-j1REQToOszIQ5VTqzcgk5uHGXN3ce9NVsWSA3PA2Ze2NhwMiavzScb669EbY6XBHrhGFvLUpP6OhT9/LV7g8cw==" crossorigin="anonymous"></script>
   <script src="./wav-audio-encoder.js"></script>
   <script src="./streaming-stt.js"></script>
