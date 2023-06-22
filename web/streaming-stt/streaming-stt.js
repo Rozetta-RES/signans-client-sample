@@ -1,9 +1,14 @@
 /*
   Streaming Speech-to-text example
 
-  - Establish a websocket connection with Signans with class: SignansClient
-  - Using MediaRecorder on browser with class: AudioRecorder
-  - Integrate websocket connection and audio streams to get speech recognition results.
+  Note:
+    - This sample code works in the browser. Doesn't work with server-side JavaScript.
+    - This JavaSript file is loaded when streaming-stt.html is opened in a browser.
+
+  Architecture:
+    - class SignansClient: Establish a websocket connection with Signans.
+    - class AudioRecorder: Utilize MediaRecorder object on browser.
+    - By these, integrate websocket connection and audio streams to get speech recognition results.
 
 */
 

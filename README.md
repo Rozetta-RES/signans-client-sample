@@ -5,5 +5,10 @@ categorized by the programming languages.
 
 ## Samples
 
+### Server-side
+
 * [Java](java)
 * [Node.js](node-js)
+
+### Client-side (on Browser)
+* [HTML/JavaScript](web/streaming-stt)
